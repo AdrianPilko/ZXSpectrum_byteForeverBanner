@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <sound.h>
+#include <unistd.h>
 
 
 struct sp1_Rect full_screen = {
@@ -79,7 +80,7 @@ void clearplot(unsigned char x, unsigned char y) {
 }
 
 
-void line(unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1) {
+void line(unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, char clearIt) {
   unsigned char dx = abs(x1 - x0);
   unsigned char dy = abs(y1 - y0);
   signed char sx = x0 < x1 ? 1 : -1;
@@ -88,7 +89,10 @@ void line(unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1
   int e2;
 
   while (1) {
-    plot(x0, y0);
+    if (clearIt) 
+      clearplot(x0, y0);
+    else
+      plot(x0, y0);
     if (x0 == x1 && y0 == y1) break;
 
     e2 = err;
@@ -103,77 +107,83 @@ void line(unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1
   }
 }
 
-void vertline(unsigned char x0, unsigned char y0, unsigned char y1) {
-  unsigned char i;
-  for (i = y1; i < y0; i++) {
-    plot(x0, i);
-  }
-}
-
-void clearVertline(unsigned char x0, unsigned char y0, unsigned char y1) {
-  unsigned char i;
-  for (i = y1; i < y0; i++) {
-    clearplot(x0, i);
-  }
-}
-
-void printB(short topLeftCoordX, short topLeftCoordY)
+void printB(char topLeftCoordX, char topLeftCoordY,char clearIt)
 {
+    char scale = 4;
     // we're drawing letters using straight lines, each one 30 wide 60 high
-    line(topLeftCoordX, topLeftCoordY, topLeftCoordX, topLeftCoordY+60);
-    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+20, topLeftCoordY);
-    line(topLeftCoordX, topLeftCoordY+60, topLeftCoordX+20, topLeftCoordY+60);
-    line(topLeftCoordX+20, topLeftCoordY, topLeftCoordX+25, topLeftCoordY+5);
-    line(topLeftCoordX+20, topLeftCoordY+60, topLeftCoordX+25, topLeftCoordY+55);    
-    line(topLeftCoordX, topLeftCoordY+30, topLeftCoordX+20, topLeftCoordY+30);
-    line(topLeftCoordX+25, topLeftCoordY+5, topLeftCoordX+25, topLeftCoordY+20);
-    line(topLeftCoordX+25, topLeftCoordY+40, topLeftCoordX+25, topLeftCoordY+55);    
-    line(topLeftCoordX+25, topLeftCoordY+20, topLeftCoordX+20, topLeftCoordY+30);
-    line(topLeftCoordX+25, topLeftCoordY+40, topLeftCoordX+20, topLeftCoordY+30);  
+    line(topLeftCoordX, topLeftCoordY, topLeftCoordX, topLeftCoordY+60/scale,clearIt);  // | left long vertical bit
+    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+20/scale, topLeftCoordY,clearIt);    // top line
+    line(topLeftCoordX, topLeftCoordY+60/scale, topLeftCoordX+20/scale, topLeftCoordY+60/scale,clearIt);  // bottom line
+    line(topLeftCoordX+20/scale, topLeftCoordY, topLeftCoordX+30/scale, topLeftCoordY+5/scale,clearIt);   // top right diag
+    line(topLeftCoordX+20/scale, topLeftCoordY+60/scale, topLeftCoordX+30/scale, topLeftCoordY+55/scale,clearIt);    // bottom right diag up
+    line(topLeftCoordX, topLeftCoordY+30/scale, topLeftCoordX+20/scale, topLeftCoordY+30/scale,clearIt);
+    line(topLeftCoordX+30/scale, topLeftCoordY+5/scale, topLeftCoordX+30/scale, topLeftCoordY+20/scale,clearIt);  // right upper vertical
+    line(topLeftCoordX+30/scale, topLeftCoordY+40/scale, topLeftCoordX+30/scale, topLeftCoordY+55/scale,clearIt); // right lower vertical   
+    line(topLeftCoordX+30/scale, topLeftCoordY+20/scale, topLeftCoordX+20/scale, topLeftCoordY+30/scale,clearIt); 
+    line(topLeftCoordX+30/scale, topLeftCoordY+40/scale, topLeftCoordX+20/scale, topLeftCoordY+30/scale,clearIt);  
 }
 
-void printY(short topLeftCoordX, short topLeftCoordY)
+void printY(char topLeftCoordX, char topLeftCoordY,char clearIt)
 {
+      char scale = 4;
     // we're drawing letters using straight lines, each one 30 wide 60 high    
-    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+15, topLeftCoordY+30);
-    line(topLeftCoordX+15, topLeftCoordY+30, topLeftCoordX+30, topLeftCoordY);
-    line(topLeftCoordX+15, topLeftCoordY+30, topLeftCoordX+15, topLeftCoordY+60);    
+    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+15/scale, topLeftCoordY+30/scale,clearIt);
+    line(topLeftCoordX+15/scale, topLeftCoordY+30/scale, topLeftCoordX+30/scale, topLeftCoordY,clearIt);
+    line(topLeftCoordX+15/scale, topLeftCoordY+30/scale, topLeftCoordX+15/scale, topLeftCoordY+60/scale,clearIt);    
 }
 
-void printT(short topLeftCoordX, short topLeftCoordY)
+void printT(char topLeftCoordX, char topLeftCoordY,char clearIt)
 {
+      char scale = 4;
     // we're drawing letters using straight lines, each one 30 wide 60 high    
-    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+30, topLeftCoordY);
-    line(topLeftCoordX+15, topLeftCoordY, topLeftCoordX+15, topLeftCoordY+60);
+    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+30/scale, topLeftCoordY,clearIt);
+    line(topLeftCoordX+15/scale, topLeftCoordY, topLeftCoordX+15/scale, topLeftCoordY+60/scale,clearIt);
 }
-void printE(short topLeftCoordX, short topLeftCoordY)
+void printE(char topLeftCoordX, char topLeftCoordY,char clearIt)
 {
+      char scale = 4;
     // we're drawing letters using straight lines, each one 30 wide 60 high    
-    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+30, topLeftCoordY);
-    line(topLeftCoordX, topLeftCoordY, topLeftCoordX, topLeftCoordY+60);    
-    line(topLeftCoordX, topLeftCoordY+30, topLeftCoordX+20, topLeftCoordY+30);    
-    line(topLeftCoordX, topLeftCoordY+60, topLeftCoordX+30, topLeftCoordY+60);    
+    line(topLeftCoordX, topLeftCoordY, topLeftCoordX+30/scale, topLeftCoordY,clearIt);
+    line(topLeftCoordX, topLeftCoordY, topLeftCoordX, topLeftCoordY+60/scale,clearIt);    
+    line(topLeftCoordX, topLeftCoordY+30/scale, topLeftCoordX+20/scale, topLeftCoordY+30/scale,clearIt);    
+    line(topLeftCoordX, topLeftCoordY+60/scale, topLeftCoordX+30/scale, topLeftCoordY+60/scale,clearIt);    
 }
 
 
 int main() {
-  const short sepration = 4;
-  const short widthOfLetter = 30;
+  const char sepration = 2;
+  const char widthOfLetter = 10;
   
   zx_border(INK_YELLOW);
   
-  short int topleftPosX = 50;
-  short int topleftPosY = 50;
-
-  //while (1) // main game loop
-  //{
-  printB(topleftPosX,topleftPosY);
-  topleftPosX+=widthOfLetter; // The B to Y requires less seperation to look right
-  printY(topleftPosX, topleftPosY);
-  topleftPosX+=widthOfLetter+sepration;
-  printT(topleftPosX, topleftPosY);
-  topleftPosX+=widthOfLetter+sepration;
-  printE(topleftPosX, topleftPosY);
-  //}
-  while(1) {}
+  char topleftPosX = 50;
+  char topleftPosY = 50;
+  char clearIt = 0;
+  char moveCursorOn = widthOfLetter+sepration;  
+  char directionX = 5;
+  char directionY = 5;
+  
+  while (1) // main game loop
+  {
+    //for (int i = 0; i < 2; i++)
+    {
+      int copyOfPosX = topleftPosX;
+      int copyOfPosY = topleftPosY;
+      printB(copyOfPosX,copyOfPosY, clearIt);
+      copyOfPosX+= moveCursorOn; 
+      printY(copyOfPosX, copyOfPosY,clearIt);
+      copyOfPosX+=moveCursorOn;
+      printT(copyOfPosX, copyOfPosY,clearIt);
+      copyOfPosX+=moveCursorOn;
+      printE(copyOfPosX, copyOfPosY,clearIt);                       
+      //clearIt = 1 - clearIt;
+    }
+    topleftPosX+=directionX;
+    topleftPosY+=directionY;
+    if (topleftPosX > 200) directionX = -directionX;
+    if (topleftPosY > 170) directionY = -directionY;    
+    
+    if (topleftPosX < 1) directionX = -directionX;
+    if (topleftPosY < 1) directionY = -directionY;    
+  }
 }
